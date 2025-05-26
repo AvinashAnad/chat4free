@@ -8,9 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Build Docker image
         run: docker build -t llama-chatbot-app .
@@ -18,7 +19,11 @@ jobs:
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Push Docker image
+      - name: Tag and Push Docker image
         run: |
-          docker tag llama-chatbot-app ${{ secrets.DOCKER_USERNAME }}/llama-chatbot-app:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/llama-chatbot-app:latest
+          IMAGE="${{ secrets.DOCKER_USERNAME }}/llama-chatbot-app:latest"
+          docker tag llama-chatbot-app $IMAGE
+          docker push $IMAGE
+
+      - name: List Docker images
+        run: docker images
