@@ -27,8 +27,7 @@ async def summarize(file: UploadFile = File(...)):
         summary = text[:500]
     elif file.filename.endswith(".docx"):
         doc = docx.Document(file.file)
-        text = "
-".join([para.text for para in doc.paragraphs])
+        text = "\n".join([para.text for para in doc.paragraphs])
         summary = text[:500]
     elif file.filename.endswith(".xlsx"):
         wb = openpyxl.load_workbook(file.file)
@@ -38,3 +37,4 @@ async def summarize(file: UploadFile = File(...)):
                 text += " ".join([str(cell) for cell in row if cell]) + "\n"
         summary = text[:500]
     return {"summary": summary}
+
