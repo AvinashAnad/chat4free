@@ -20,5 +20,5 @@ jobs:
 
       - name: Push Docker image
         run: |
-          # docker tag llama-chatbot-app ${{ secrets.DOCKER_USERNAME }}/llama-chatbot-app:latest
+          docker tag llama-chatbot-app ${{ secrets.DOCKER_USERNAME }}/llama-chatbot-app:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/llama-chatbot-app:latest
