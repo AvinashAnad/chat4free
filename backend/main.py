@@ -1,40 +1,31 @@
-
 from fastapi import FastAPI, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
-from PyPDF2 import PdfReader
-import docx
-import openpyxl
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+import shutil
+import os
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Serve static frontend files
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+# Serve index.html at root
+@app.get("/", response_class=HTMLResponse)
+async def serve_homepage():
+    with open("frontend/index.html", "r") as f:
+        return f.read()
 
 @app.post("/summarize/")
 async def summarize(file: UploadFile = File(...)):
-    content = await file.read()
-    summary = "Unsupported file type"
-    if file.filename.endswith(".txt"):
-        summary = content.decode("utf-8")[:100]
-    elif file.filename.endswith(".pdf"):
-        reader = PdfReader(file.file)
-        text = "".join([page.extract_text() for page in reader.pages])
-        summary = text[:500]
-    elif file.filename.endswith(".docx"):
-        doc = docx.Document(file.file)
-        text = "\n".join([para.text for para in doc.paragraphs])
-        summary = text[:500]
-    elif file.filename.endswith(".xlsx"):
-        wb = openpyxl.load_workbook(file.file)
-        text = ""
-        for sheet in wb.worksheets:
-            for row in sheet.iter_rows(values_only=True):
-                text += " ".join([str(cell) for cell in row if cell]) + "\n"
-        summary = text[:500]
-    return {"summary": summary}
+    # Save the uploaded file temporarily
+    temp_path = f"temp_{file.filename}"
+    with open(temp_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
+    # Mock summary (replace with actual logic later)
+    summary = f"This is a summary of {file.filename}."
+
+    # Clean up
+    os.remove(temp_path)
+
+    return JSONResponse(content={"summary": summary})
