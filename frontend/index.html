@@ -24,32 +24,44 @@
     <p id="summaryResult"></p>
 
     <script>
-        async function sendMessage() {
-            const input = document.getElementById("userInput").value;
-            const chatbox = document.getElementById("chatbox");
-            chatbox.innerHTML += `<div class='message user'><strong>You:</strong> ${input}</div>`;
-            document.getElementById("userInput").value = "";
+    async function sendMessage() {
+        const input = document.getElementById("userInput").value;
+        const chatbox = document.getElementById("chatbox");
+        chatbox.innerHTML += `<div class='message user'><strong>You:</strong> ${input}</div>`;
+        document.getElementById("userInput").value = "";
 
-            // Placeholder response — this would call a real endpoint in future
-            const response = "This is a mock response from the LLaMA model.";
-            chatbox.innerHTML += `<div class='message bot'><strong>Bot:</strong> ${response}</div>`;
-            chatbox.scrollTop = chatbox.scrollHeight;
-        }
+        const formData = new FormData();
+        formData.append("message", input);
 
-        async function uploadDocument() {
-            const file = document.getElementById("fileInput").files[0];
-            if (!file) return alert("Please select a file.");
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            const res = await fetch("/summarize/", {
+        try {
+            const res = await fetch("/chat/", {
                 method: "POST",
                 body: formData
             });
             const data = await res.json();
-            document.getElementById("summaryResult").innerText = "Summary: " + data.summary;
+            chatbox.innerHTML += `<div class='message bot'><strong>Bot:</strong> ${data.response}</div>`;
+        } catch (err) {
+            chatbox.innerHTML += `<div class='message bot'><strong>Bot:</strong> Error contacting the server.</div>`;
+        }
+
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    async function uploadDocument() {
+        const file = document.getElementById("fileInput").files[0];
+        if (!file) return alert("Please select a file.");
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/summarize/", {
+            method: "POST",
+            body: formData
+        });
+        const data = await res.json();
+        document.getElementById("summaryResult").innerText = "Summary: " + data.summary;
         }
     </script>
+
 </body>
 </html>
